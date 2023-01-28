@@ -115,7 +115,7 @@ window.addEventListener("keyup", (e) => {
 let shooting = false;
 
 const shoot = () => {
-  const bullet = Sprite.from("https://unsplash.it/110/11s0");
+  const bullet = Sprite.from("https://unsplash.it/20/20");
   bullet.x = ball.x;
   bullet.y = ball.y;
   app.stage.addChild(bullet);
