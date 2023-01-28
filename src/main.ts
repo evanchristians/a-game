@@ -112,11 +112,10 @@ window.addEventListener("keyup", (e) => {
   }
 });
 
-
 let shooting = false;
 
 const shoot = () => {
-  const bullet = Sprite.from("https://unsplash.it/110/110");
+  const bullet = Sprite.from("https://unsplash.it/110/11s0");
   bullet.x = ball.x;
   bullet.y = ball.y;
   app.stage.addChild(bullet);
@@ -144,18 +143,18 @@ const startShooting = (rate: number) => {
     }
     shoot();
   }, rate);
-}
+};
 
 const stopShooting = () => {
   shooting = false;
-}
+};
 
 window.addEventListener("mousedown", () => {
   startShooting(100);
-})
+});
 window.addEventListener("mouseup", () => {
   stopShooting();
-})
+});
 const useMove = () => {
   ball.x += velocity.x;
   ball.y += velocity.y;
