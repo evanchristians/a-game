@@ -160,7 +160,7 @@ const useMove = () => {
   ball.y += velocity.y;
 };
 
-app.ticker.add((dt) => {
+app.ticker.add(() => {
   useInDanger(isWithin(ball, 50));
   useMove();
   if (!isWithin(ball, 50)) {
