@@ -1,6 +1,10 @@
 import { Application, Sprite } from "pixi.js";
 import "./styles/global.css";
 
+const clamp = (value: number, min: number, max: number) => {
+  return Math.min(Math.max(value, min), max);
+};
+
 const app = new Application({
   height: window.innerHeight,
   width: (window.innerHeight * 4) / 3,
@@ -33,9 +37,10 @@ const chase = (target: { x: number; y: number }, speed: number) => {
   char.y += Math.round(vy);
 };
 
-const isWithin = (target: { x: number; y: number }, range: number) => {
-  const dx = target.x - char.x;
-  const dy = target.y - char.y;
+const isWithin = (target: { x: number; y: number }, sprite: Sprite) => {
+  const dx = target.x - sprite.x;
+  const dy = target.y - sprite.y;
+  const range = sprite.width / 2;
   const distance = Math.sqrt(dx * dx + dy * dy);
   return distance < range;
 };
@@ -113,26 +118,46 @@ window.addEventListener("keyup", (e) => {
 });
 
 let shooting = false;
-
+const BULLET_SPEED = 5;
 const shoot = () => {
   const bullet = Sprite.from("https://unsplash.it/20/20");
-  bullet.x = ball.x;
-  bullet.y = ball.y;
+  bullet.x = ball.x + ball.width / 2;
+  bullet.y = ball.y + ball.height / 2;
   app.stage.addChild(bullet);
   const dx = mouseX - ball.x;
   const dy = mouseY - ball.y;
   const angle = Math.atan2(dy, dx);
-  const vx = Math.cos(angle) * 10;
-  const vy = Math.sin(angle) * 10;
+  const vx = Math.cos(angle) * BULLET_SPEED;
+  const vy = Math.sin(angle) * BULLET_SPEED;
   const move = () => {
     bullet.x += vx;
     bullet.y += vy;
   };
+  const home = (target: Sprite) => () => {
+    const dx = target.x + target.width / 2 - bullet.x;
+    const dy = target.y + target.height / 2 - bullet.y;
+    const angle = Math.atan2(dy, dx);
+    const vx = clamp(Math.cos(angle) * BULLET_SPEED, -BULLET_SPEED, BULLET_SPEED);
+    const vy = clamp(Math.sin(angle) * BULLET_SPEED, -BULLET_SPEED, BULLET_SPEED);
+    bullet.x += vx;
+    bullet.y += vy;
+    if (isWithin(bullet, char)) {
+      app.stage.removeChild(bullet);
+      app.ticker.remove(move);
+      app.ticker.remove(home(char));
+    }
+  };
   app.ticker.add(move);
   setTimeout(() => {
     app.ticker.remove(move);
+    app.ticker.add(home(char));
+  }, 50);
+  setTimeout(() => {
+    app.ticker.remove(home(char));
     app.stage.removeChild(bullet);
   }, 1000);
+  // if the bullet is within 10px of the target, remove it and make the target flash red
+
 };
 
 const startShooting = (rate: number) => {
@@ -161,9 +186,9 @@ const useMove = () => {
 };
 
 app.ticker.add(() => {
-  useInDanger(isWithin(ball, 50));
+  useInDanger(isWithin(ball, char));
   useMove();
-  if (!isWithin(ball, 50)) {
+  if (!isWithin(ball, char)) {
     chase(ball, chaseSpeed);
   } else {
     chaseSpeed = 5;
